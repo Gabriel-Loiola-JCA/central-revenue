@@ -53,7 +53,7 @@
     const status = !config.googleClientId
       ? 'O login Google ainda não está configurado neste projeto.'
       : !apiBase
-        ? 'A camada protegida de conteúdo ainda precisa ser conectada. Quando a função Google Cloud estiver implantada, informe sua URL em config.js para ativar o acesso compartilhado.'
+        ? 'A conexão protegida da Central Revenue ainda não está configurada.'
         : 'Entre com a mesma conta Google autorizada para a equipe Revenue.';
     gate.innerHTML = `
       <section class="gate-card">
@@ -117,7 +117,7 @@
   }
 
   async function request(path, options = {}) {
-    if (!apiBase) throw new Error('A URL da função Google Cloud ainda não foi configurada.');
+    if (!apiBase) throw new Error('A conexão da Central Revenue ainda não foi configurada.');
     const headers = new Headers(options.headers || {});
     if (state.token) headers.set('Authorization', `Bearer ${state.token}`);
     const response = await fetch(`${apiBase}${path}`, { ...options, headers, cache: 'no-store' });
@@ -167,7 +167,7 @@
       renderPage();
     } catch (error) {
       if (/Entre novamente/.test(error.message)) return signOut(error.message);
-      $('#pageContent').innerHTML = `<section class="library-empty"><span class="empty-symbol">↻</span><h2>Não foi possível abrir a central</h2><p>${escapeHTML(error.message)} Verifique a conexão com a função Google Cloud e tente novamente.</p><button class="button button-quiet" id="retryLoad" type="button">Tentar novamente</button></section>`;
+      $('#pageContent').innerHTML = `<section class="library-empty"><span class="empty-symbol">↻</span><h2>Não foi possível abrir a central</h2><p>${escapeHTML(error.message)} Verifique a conexão com a infraestrutura do Daily Room e tente novamente.</p><button class="button button-quiet" id="retryLoad" type="button">Tentar novamente</button></section>`;
       $('#retryLoad')?.addEventListener('click', enterApp);
     }
   }
@@ -464,7 +464,7 @@
     setTheme(localStorage.getItem('central-revenue-theme') || 'dark');
     wireCommonControls();
     if (!apiBase) {
-      showGate('A página está pronta. Falta conectar a função privada do Google Cloud para validar os acessos e guardar conteúdo para toda a equipe.');
+      showGate('A página está pronta. Entre com sua conta Google da equipe Revenue para acessar os conteúdos compartilhados.');
       return;
     }
     if (state.token) {
