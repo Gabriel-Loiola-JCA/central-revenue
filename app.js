@@ -231,7 +231,11 @@
     const quotes = items.filter((item) => item.type === 'quote').slice(0, 2);
     const totalDocs = items.filter((item) => item.type === 'document').length;
     const totalNotices = items.filter((item) => item.type === 'notice').length;
-    const quickMarkup = quick.length ? `<div class="quick-grid">${quick.map((item) => `<a class="quick-card" href="${escapeHTML(cleanLink(item.url) || './area.html')}" ${cleanLink(item.url) ? 'target="_blank" rel="noopener noreferrer"' : ''}><div class="quick-card-top"><span class="quick-icon">${escapeHTML(iconFor(item))}</span><span class="arrow" aria-hidden="true">↗</span></div><strong>${escapeHTML(item.title)}</strong><small>${escapeHTML(item.category || 'Acesso rápido')}</small></a>`).join('')}</div>` : emptyInline(state.user?.role === 'admin' ? 'Comece incluindo os links usados com mais frequência pela área.' : 'Os atalhos da área aparecerão aqui quando forem publicados.')}`;
+    const quickMarkup = quick.length
+      ? `<div class="quick-grid">${quick.map((item) => `<a class="quick-card" href="${escapeHTML(cleanLink(item.url) || './area.html')}" ${cleanLink(item.url) ? 'target="_blank" rel="noopener noreferrer"' : ''}><div class="quick-card-top"><span class="quick-icon">${escapeHTML(iconFor(item))}</span><span class="arrow" aria-hidden="true">↗</span></div><strong>${escapeHTML(item.title)}</strong><small>${escapeHTML(item.category || 'Acesso rápido')}</small></a>`).join('')}</div>`
+      : emptyInline(state.user?.role === 'admin'
+        ? 'Comece incluindo os links usados com mais frequência pela área.'
+        : 'Os atalhos da área aparecerão aqui quando forem publicados.');
     const noticeMarkupList = notices.length ? notices.map(noticeMarkup).join('') : emptyInline(state.user?.role === 'admin' ? 'Adicione um aviso e defina até quando ele deve ficar visível.' : 'Nenhum aviso ativo neste momento.');
     const documentsMarkup = documents.length ? documents.map(resourceRow).join('') : emptyInline('Documentos e materiais publicados pela área aparecem aqui.');
     const quotesMarkup = quotes.length ? quotes.map((item) => `<article class="quote-card"><span class="quote-mark">“</span><blockquote>${escapeHTML(item.body || item.title)}</blockquote>${item.body ? `<cite>${escapeHTML(item.title)}</cite>` : ''}${adminControls(item)}</article>`).join('') : emptyInline('Frases e princípios importantes da área aparecerão aqui quando forem publicados.');
