@@ -7,7 +7,7 @@ import os
 import re
 import uuid
 from datetime import date, datetime, timezone
-from urllib.parse import urlparse
+from urllib.parse import quote, urlparse
 
 import functions_framework
 from flask import jsonify, make_response, request
@@ -270,7 +270,7 @@ def main(request):
             data = blob.download_as_bytes()
             response = make_response(data)
             response.headers["Content-Type"] = record.get("contentType", "application/octet-stream")
-            response.headers["Content-Disposition"] = f"attachment; filename*=UTF-8''{record.get('name', 'arquivo')}"
+            response.headers["Content-Disposition"] = f"attachment; filename*=UTF-8''{quote(record.get('name', 'arquivo'), safe='')}"
             response.headers["X-Content-Type-Options"] = "nosniff"
             return _cors(response)
 

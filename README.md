@@ -9,13 +9,13 @@ Portal interno da área Revenue: comunicados com prazo, repositório de materiai
 - `app.js`, `styles.css` — interface e interações.
 - `config.js` — ID público do cliente Google e URL da API.
 - `functions/` — API para login, conteúdo e anexos privados no Google Cloud.
-- `.github/workflows/pages.yml` — publicação no GitHub Pages ao atualizar `main`.
+- GitHub Pages publica a raiz da branch `main`.
 
 O repositório não contém a lista de e-mails liberados nem o conteúdo do portal. O site estático pode ser público; os dados e arquivos ficam no Firestore e em um bucket privado. A API exige login Google e valida a conta em cada chamada.
 
 ## Publicar a interface
 
-Depois de criar o repositório `central-revenue` na conta GitHub `Gabriel-Loiola-JCA`, habilite **Settings → Pages → Build and deployment → GitHub Actions**. A cada atualização em `main`, o workflow publica o portal. Endereço esperado:
+O Pages está configurado para publicar a raiz da branch `main`. Endereço do portal:
 
 `https://gabriel-loiola-jca.github.io/central-revenue/`
 
