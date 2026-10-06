@@ -1,0 +1,71 @@
+<!doctype html>
+<html lang="pt-BR">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="theme-color" content="#101314" />
+    <meta name="description" content="Central de conhecimento e recursos da área Revenue." />
+    <title>Central Revenue</title>
+    <link rel="icon" href="./favicon.svg" type="image/svg+xml" />
+    <link rel="stylesheet" href="./styles.css" />
+    <script src="https://accounts.google.com/gsi/client" async defer></script>
+  </head>
+  <body data-page="home">
+    <div id="accessGate" class="access-gate" aria-live="polite"></div>
+    <div id="app" class="app-shell" hidden>
+      <header class="topbar">
+        <a class="brand" href="./" aria-label="Central Revenue, início">
+          <span class="brand-mark" aria-hidden="true"><i></i><i></i><i></i></span>
+          <span class="brand-copy"><strong>REVENUE</strong><small>INTELIGÊNCIA COMERCIAL</small></span>
+        </a>
+        <nav class="main-nav" aria-label="Navegação principal">
+          <a href="./" data-nav="home">Visão geral</a>
+          <a href="./area.html" data-nav="area">Minha área</a>
+        </nav>
+        <div class="top-actions">
+          <button id="themeToggle" class="icon-button" type="button" aria-label="Ativar modo claro" title="Alternar tema"><span class="theme-glyph" aria-hidden="true">◐</span></button>
+          <button id="adminAdd" class="button button-quiet admin-only" type="button" hidden><span aria-hidden="true">＋</span> Adicionar</button>
+          <button id="profileButton" class="profile-button" type="button" aria-label="Perfil" title="Perfil">
+            <span id="profileInitials" class="avatar">R</span>
+            <span id="profileName" class="profile-name">Revenue</span>
+            <span class="chevron" aria-hidden="true">⌄</span>
+          </button>
+          <div id="profileMenu" class="profile-menu" hidden>
+            <div id="profileEmail" class="profile-email"></div>
+            <button id="signOut" type="button">Sair da conta</button>
+          </div>
+        </div>
+      </header>
+
+      <main id="pageContent" class="page-content"></main>
+      <footer class="site-footer">
+        <div class="footer-brand"><span class="brand-mark small" aria-hidden="true"><i></i><i></i><i></i></span><strong>REVENUE</strong></div>
+        <span>Conhecimento que aproxima decisões.</span>
+        <span class="footer-status"><i></i> Ambiente da área</span>
+      </footer>
+    </div>
+
+    <dialog id="itemDialog" class="item-dialog">
+      <form id="itemForm" method="dialog" class="dialog-card">
+        <div class="dialog-topline"><span class="eyebrow">CENTRAL REVENUE</span><button class="icon-button dialog-close" type="button" aria-label="Fechar">×</button></div>
+        <h2 id="dialogTitle">Adicionar conteúdo</h2>
+        <p class="dialog-intro">Publique um atalho, material, aviso ou frase para a área.</p>
+        <input id="itemId" type="hidden" />
+        <div class="form-grid">
+          <label class="field"><span>Tipo</span><select id="itemType" required><option value="link">Link rápido</option><option value="document">Documento / arquivo</option><option value="notice">Aviso com validade</option><option value="quote">Frase importante</option></select></label>
+          <label class="field"><span>Categoria</span><select id="itemCategory" required><option>Estratégia</option><option>Indicadores</option><option>Ferramentas</option><option>Processos</option><option>Mercado</option><option>Materiais</option><option>Geral</option></select></label>
+          <label class="field field-wide"><span id="titleLabel">Título</span><input id="itemTitle" maxlength="120" required placeholder="Ex.: Guia de gestão de receita" /></label>
+          <label class="field field-wide"><span>Contexto</span><textarea id="itemBody" maxlength="600" rows="3" placeholder="Uma linha para ajudar o time a entender o conteúdo"></textarea></label>
+          <label id="urlField" class="field field-wide"><span>Endereço do site</span><input id="itemUrl" type="url" inputmode="url" placeholder="https://" /></label>
+          <label id="fileField" class="field field-wide" hidden><span>Arquivo (PDF, Office ou imagem · até 12 MB)</span><input id="itemFile" type="file" accept=".pdf,.doc,.docx,.xls,.xlsx,.ppt,.pptx,.png,.jpg,.jpeg,.webp" /></label>
+          <label id="expiryField" class="field"><span>Válido até</span><input id="itemExpiry" type="date" /></label>
+          <label class="field"><span>Exibir em destaque</span><select id="itemFeatured"><option value="false">Não</option><option value="true">Sim</option></select></label>
+        </div>
+        <div id="formMessage" class="form-message" role="status"></div>
+        <div class="dialog-actions"><button class="button button-quiet dialog-close" type="button">Cancelar</button><button id="saveItem" class="button button-primary" type="submit">Publicar</button></div>
+      </form>
+    </dialog>
+    <script src="./config.js"></script>
+    <script src="./app.js" defer></script>
+  </body>
+</html>
