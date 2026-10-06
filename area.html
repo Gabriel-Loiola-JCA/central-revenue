@@ -6,17 +6,27 @@
     <meta name="theme-color" content="#101314" />
     <meta name="description" content="Repositório da área Revenue: ferramentas, documentos, avisos e referências." />
     <title>Minha área · Central Revenue</title>
-    <link rel="icon" href="./favicon.svg" type="image/svg+xml" />
-    <link rel="stylesheet" href="./styles.css" />
+    <link rel="icon" href="./assets/favicon-revenue.png" type="image/png" />
+    <link rel="stylesheet" href="./styles.css?v=4" />
     <script src="https://accounts.google.com/gsi/client" async defer></script>
   </head>
   <body data-page="area">
-    <div id="accessGate" class="access-gate" aria-live="polite"></div>
+    <div id="accessGate" class="access-gate" aria-live="polite">
+      <section class="gate-card">
+        <div class="gate-brand"><img class="revenue-logo logo-for-light" src="./assets/revenue-lockup-light.png" alt="Revenue" /><img class="revenue-logo logo-for-dark" src="./assets/revenue-lockup-dark.png" alt="Revenue" /></div>
+        <p class="gate-caption">INTELIGÊNCIA COMERCIAL</p>
+        <h1>Conhecimento para<br /><span>decidir melhor.</span></h1>
+        <p>Uma central da área para encontrar ferramentas, documentos, avisos e referências importantes.</p>
+        <div class="google-slot"></div>
+        <div class="gate-message" role="status">Conectando a Central Revenue…</div>
+        <div class="gate-foot"><span>◆</span> Acesso restrito às contas autorizadas da equipe.</div>
+      </section>
+    </div>
     <div id="app" class="app-shell" hidden>
       <header class="topbar">
         <a class="brand" href="./" aria-label="Central Revenue, início">
-          <span class="brand-mark" aria-hidden="true"><i></i><i></i><i></i></span>
-          <span class="brand-copy"><strong>REVENUE</strong><small>INTELIGÊNCIA COMERCIAL</small></span>
+          <img class="revenue-logo logo-for-light" src="./assets/revenue-lockup-light.png" alt="" />
+          <img class="revenue-logo logo-for-dark" src="./assets/revenue-lockup-dark.png" alt="" />
         </a>
         <nav class="main-nav" aria-label="Navegação principal">
           <a href="./" data-nav="home">Visão geral</a>
@@ -31,7 +41,7 @@
       </header>
 
       <main id="pageContent" class="page-content"></main>
-      <footer class="site-footer"><div class="footer-brand"><span class="brand-mark small" aria-hidden="true"><i></i><i></i><i></i></span><strong>REVENUE</strong></div><span>Conhecimento que aproxima decisões.</span><span class="footer-status"><i></i> Ambiente da área</span></footer>
+      <footer class="site-footer"><div class="footer-brand"><img class="revenue-logo footer-logo logo-for-light" src="./assets/revenue-lockup-light.png" alt="" /><img class="revenue-logo footer-logo logo-for-dark" src="./assets/revenue-lockup-dark.png" alt="" /></div><span>Conhecimento que aproxima decisões.</span><span class="footer-status"><i></i> Ambiente da área</span></footer>
     </div>
 
     <dialog id="itemDialog" class="item-dialog">
@@ -51,6 +61,6 @@
         <div id="formMessage" class="form-message" role="status"></div><div class="dialog-actions"><button class="button button-quiet dialog-close" type="button">Cancelar</button><button id="saveItem" class="button button-primary" type="submit">Publicar</button></div>
       </form>
     </dialog>
-    <script src="./config.js"></script><script src="./app.js" defer></script>
+    <script src="./config.js?v=1"></script><script src="./app.js?v=4" defer></script>
   </body>
 </html>

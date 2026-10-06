@@ -57,7 +57,8 @@
         : 'Entre com a mesma conta Google autorizada para a equipe Revenue.';
     gate.innerHTML = `
       <section class="gate-card">
-        <div class="gate-brand"><span class="brand-mark" aria-hidden="true"><i></i><i></i><i></i></span><span><strong>REVENUE</strong><small>INTELIGÊNCIA COMERCIAL</small></span></div>
+        <div class="gate-brand"><img class="revenue-logo logo-for-light" src="./assets/revenue-lockup-light.png" alt="Revenue" /><img class="revenue-logo logo-for-dark" src="./assets/revenue-lockup-dark.png" alt="Revenue" /></div>
+        <p class="gate-caption">INTELIGÊNCIA COMERCIAL</p>
         <h1>Conhecimento para<br /><span>decidir melhor.</span></h1>
         <p>Uma central da área para encontrar ferramentas, documentos, avisos e referências importantes.</p>
         <div class="google-slot"><div id="googleButton"></div></div>
@@ -251,7 +252,7 @@
           <p>Ferramentas, materiais, avisos e ideias importantes da área — organizados para você encontrar o que precisa e seguir em frente.</p>
           <div class="welcome-actions"><a class="button button-primary" href="./area.html">Explorar minha área <span aria-hidden="true">→</span></a><span class="welcome-note">Uma fonte compartilhada para o time.</span></div>
         </div>
-        <div class="welcome-seal" aria-hidden="true"><span class="seal-letter">R</span><span class="seal-caption">REVENUE · 2026</span></div>
+        <div class="welcome-seal" aria-hidden="true"><img class="revenue-symbol logo-for-light" src="./assets/revenue-symbol-light.png" alt="" /><img class="revenue-symbol logo-for-dark" src="./assets/revenue-symbol-dark.png" alt="" /><span class="seal-caption">REVENUE · 2026</span></div>
       </section>
       <div class="overview-line"><span class="date-stamp">${escapeHTML(displayToday())}</span><span class="date-stamp">${items.length} conteúdos · ${totalDocs} materiais · ${totalNotices} avisos ativos</span></div>
       <section class="content-section"><div class="section-heading"><div><h2>Acesso rápido</h2><p>Os pontos de partida para o trabalho da área.</p></div><a class="text-link" href="./area.html?tipo=link">Ver todos <span aria-hidden="true">→</span></a></div>${quickMarkup}</section>

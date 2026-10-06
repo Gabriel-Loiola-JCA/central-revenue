@@ -12,6 +12,8 @@
   --gold: #d3b878;
   --gold-soft: rgba(211, 184, 120, .12);
   --gold-line: rgba(211, 184, 120, .32);
+  --flare: rgba(222, 226, 224, .065);
+  --flare-line: rgba(222, 226, 224, .2);
   --green: #87aa94;
   --danger: #d89387;
   --shadow: 0 22px 80px rgba(0, 0, 0, .28);
@@ -38,6 +40,8 @@
   --gold: #92753a;
   --gold-soft: rgba(146, 117, 58, .09);
   --gold-line: rgba(146, 117, 58, .26);
+  --flare: rgba(48, 56, 52, .065);
+  --flare-line: rgba(48, 56, 52, .19);
   --green: #4c785a;
   --danger: #a35145;
   --shadow: 0 22px 80px rgba(50, 44, 28, .1);
@@ -60,7 +64,12 @@ button:focus-visible, a:focus-visible, input:focus-visible, textarea:focus-visib
   background: color-mix(in srgb, var(--bg) 92%, transparent); border-bottom: 1px solid var(--line);
   backdrop-filter: blur(16px);
 }
-.brand { flex: 0 0 auto; display: inline-flex; align-items: center; gap: 11px; min-width: 208px; }
+.brand { flex: 0 0 auto; display: inline-flex; align-items: center; min-width: 0; }
+.revenue-logo { display: block; width: auto; height: 43px; object-fit: contain; }
+.logo-for-light { display: none; }
+.logo-for-dark { display: block; }
+:root[data-theme="light"] .logo-for-light { display: block; }
+:root[data-theme="light"] .logo-for-dark { display: none; }
 .brand-mark { position: relative; display: inline-flex; width: 30px; height: 30px; align-items: center; justify-content: center; gap: 3px; border: 1px solid var(--gold-line); border-radius: 10px; background: var(--gold-soft); }
 .brand-mark i { display: block; width: 3px; border-radius: 5px; background: var(--gold); }
 .brand-mark i:nth-child(1) { height: 8px; opacity: .55; }
@@ -101,18 +110,18 @@ button:focus-visible, a:focus-visible, input:focus-visible, textarea:focus-visib
 .page-content { width: min(var(--page-width), calc(100% - 64px)); min-height: calc(100vh - 145px); margin: 0 auto; padding: 44px 0 68px; }
 .eyebrow { display: inline-flex; align-items: center; gap: 9px; color: var(--gold); font-size: 9px; font-weight: 700; letter-spacing: .19em; text-transform: uppercase; }
 .eyebrow::before { width: 17px; height: 1px; background: var(--gold); content: ""; }
-.welcome { position: relative; display: grid; min-height: 302px; grid-template-columns: 1.45fr .55fr; align-items: center; overflow: hidden; padding: 40px 50px; border: 1px solid var(--line); border-radius: var(--radius-lg); background: radial-gradient(ellipse at 80% 40%, var(--gold-soft), transparent 39%), linear-gradient(135deg, var(--bg-raised), var(--bg)); }
-.welcome::after { position: absolute; right: -80px; bottom: -220px; width: 480px; height: 480px; border: 1px solid var(--gold-line); border-radius: 50%; opacity: .28; content: ""; pointer-events: none; }
+.welcome { position: relative; display: grid; min-height: 302px; grid-template-columns: 1.45fr .55fr; align-items: center; overflow: hidden; padding: 40px 50px; border: 1px solid var(--line); border-radius: var(--radius-lg); background: radial-gradient(ellipse at 80% 40%, var(--flare), transparent 39%), linear-gradient(135deg, var(--bg-raised), var(--bg)); }
+.welcome::after { position: absolute; right: -80px; bottom: -220px; width: 480px; height: 480px; border: 1px solid var(--flare-line); border-radius: 50%; opacity: .28; content: ""; pointer-events: none; }
 .welcome-copy { position: relative; z-index: 1; max-width: 670px; }
 .welcome h1 { max-width: 700px; margin: 19px 0 13px; font-size: clamp(32px, 4vw, 49px); font-weight: 450; letter-spacing: -.055em; line-height: 1.07; }
 .welcome h1 span { color: var(--gold); }
 .welcome p { max-width: 510px; margin: 0; color: var(--muted); font-size: 13px; line-height: 1.75; }
 .welcome-actions { display: flex; align-items: center; gap: 14px; margin-top: 26px; }
 .welcome-note { color: var(--muted-2); font-size: 10px; }
-.welcome-seal { position: relative; z-index: 1; display: grid; justify-self: center; width: min(195px, 90%); aspect-ratio: 1; place-items: center; border: 1px solid var(--gold-line); border-radius: 50%; background: color-mix(in srgb, var(--bg) 80%, transparent); }
+.welcome-seal { position: relative; z-index: 1; display: grid; justify-self: center; width: min(195px, 90%); aspect-ratio: 1; place-items: center; border: 1px solid var(--flare-line); border-radius: 50%; background: color-mix(in srgb, var(--bg) 80%, transparent); }
 .welcome-seal::before, .welcome-seal::after { position: absolute; inset: 13px; border: 1px solid var(--line-strong); border-radius: 50%; content: ""; }
-.welcome-seal::after { inset: 27px; border-color: var(--gold-line); }
-.seal-letter { z-index: 1; color: var(--gold); font-size: 76px; font-weight: 300; letter-spacing: -.11em; }
+.welcome-seal::after { inset: 27px; border-color: var(--flare-line); }
+.revenue-symbol { display: block; width: 68%; height: auto; object-fit: contain; }
 .seal-caption { position: absolute; bottom: 32px; z-index: 2; padding: 4px 8px; background: var(--bg-raised); color: var(--muted); font-size: 8px; letter-spacing: .16em; }
 
 .overview-line { display: flex; align-items: center; justify-content: space-between; gap: 18px; margin: 27px 0 13px; }
@@ -199,15 +208,16 @@ button:focus-visible, a:focus-visible, input:focus-visible, textarea:focus-visib
 .notice-page-grid .notice-card h3 { font-size: 13px; }
 
 .site-footer { display: flex; min-height: 71px; align-items: center; gap: 18px; padding: 12px max(32px, calc((100vw - var(--page-width)) / 2)); border-top: 1px solid var(--line); color: var(--muted-2); font-size: 9px; }
-.footer-brand { display: inline-flex; align-items: center; gap: 8px; color: var(--text); font-size: 9px; letter-spacing: .15em; }
+.footer-brand { display: inline-flex; align-items: center; }
+.footer-logo { height: 25px; }
 .footer-status { display: inline-flex; align-items: center; gap: 7px; margin-left: auto; }
 .footer-status i { width: 6px; height: 6px; border-radius: 50%; background: var(--green); }
 
-.access-gate { display: grid; min-height: 100vh; place-items: center; padding: 28px; background: radial-gradient(ellipse at 50% 15%, var(--gold-soft), transparent 38%), var(--bg); }
+.access-gate { display: grid; min-height: 100vh; place-items: center; padding: 28px; background: radial-gradient(ellipse at 50% 15%, var(--flare), transparent 38%), var(--bg); }
 .gate-card { width: min(100%, 435px); padding: 37px; border: 1px solid var(--line-strong); border-radius: 22px; background: var(--bg-raised); box-shadow: var(--shadow); }
-.gate-brand { display: flex; align-items: center; gap: 11px; }
-.gate-brand strong { font-size: 11px; letter-spacing: .2em; }
-.gate-brand small { display: block; margin-top: 3px; color: var(--muted-2); font-size: 8px; letter-spacing: .14em; }
+.gate-brand { display: flex; align-items: center; }
+.gate-brand .revenue-logo { height: 48px; }
+.gate-caption { margin: 4px 0 0; color: var(--muted-2); font-size: 8px; letter-spacing: .16em; }
 .gate-card h1 { margin: 32px 0 10px; font-size: 30px; font-weight: 450; letter-spacing: -.045em; }
 .gate-card h1 span { color: var(--gold); }
 .gate-card > p { margin: 0; color: var(--muted); font-size: 12px; line-height: 1.75; }

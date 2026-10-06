@@ -9,6 +9,7 @@ Portal interno da área Revenue: comunicados com prazo, repositório de materiai
 - `app.js`, `styles.css` — interface e interações.
 - `config.js` — ID público do cliente Google e URL da API.
 - `functions/` — API para login, conteúdo e anexos privados no Google Cloud.
+- `assets/` — logos originais Revenue em versões para os temas claro e escuro.
 - GitHub Pages publica a raiz da branch `main`.
 
 O repositório não contém a lista de e-mails liberados nem o conteúdo do portal. O site estático pode ser público; os dados e arquivos ficam no Firestore e em um bucket privado. A API exige login Google e valida a conta em cada chamada.
@@ -47,7 +48,7 @@ gcloud functions deploy central-revenue-api `
   --set-secrets "ALLOWED_EMAILS=central-revenue-allowed-emails:latest,ADMIN_EMAILS=central-revenue-admin-emails:latest"
 ```
 
-Copie a URL HTTPS exibida pelo deploy para `apiBaseUrl` em `config.js`, sem acrescentar uma barra final. Faça commit e push; o workflow publica a configuração atualizada. Não adicione a URL a um arquivo de segredos: a URL da API não é uma credencial.
+Copie a URL HTTPS exibida pelo deploy para `apiBaseUrl` em `config.js`, sem acrescentar uma barra final. Faça commit e push; o GitHub Pages publica a raiz da branch `main`. Não adicione a URL a um arquivo de segredos: a URL da API não é uma credencial.
 
 ## Autenticação e publicação de conteúdo
 
