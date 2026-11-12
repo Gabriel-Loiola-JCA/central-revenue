@@ -299,3 +299,11 @@ button:focus-visible, a:focus-visible, input:focus-visible, textarea:focus-visib
 @media (prefers-reduced-motion: reduce) {
   *, *::before, *::after { scroll-behavior: auto !important; transition-duration: .01ms !important; animation-duration: .01ms !important; animation-iteration-count: 1 !important; }
 }
+
+.directory-grid { align-items: start; }
+.resource-group + .resource-group { margin-top: 20px; }
+.resource-group h3 { margin: 0 0 8px; color: var(--muted); font-size: 13px; }
+.resource-group h3 span, .directory-grid h2 span { color: var(--gold); }
+.resource-group h3 small { color: var(--muted-2); font-weight: normal; }
+.directory-grid .resource-row-copy strong { white-space: normal; overflow-wrap: anywhere; font-size: 13px; }
+.directory-grid .resource-row-copy small { overflow-wrap: anywhere; font-size: 11px; }

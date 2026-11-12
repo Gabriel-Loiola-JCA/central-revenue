@@ -12,6 +12,8 @@
   const categoryIcons = { Estratégia: '⌁', Indicadores: '▥', Ferramentas: '↗', Processos: '≋', Mercado: '◎', Materiais: '▤', Geral: '＋' };
   const typeLabels = { link: 'Link rápido', document: 'Documento', notice: 'Aviso', quote: 'Frase' };
   let googleInitialized = false;
+  let checkingUpdates = false;
+  let contentRevision = 0;
 
   function setTheme(theme) {
     document.documentElement.dataset.theme = theme;
@@ -224,21 +226,26 @@
     return `<div class="empty-inline"><i class="empty-dot" aria-hidden="true"></i><span>${escapeHTML(message)}</span></div>`;
   }
 
+  function groupedResources(items, emptyMessage) {
+    if (!items.length) return emptyInline(emptyMessage);
+    const groups = Map.groupBy(items, (item) => item.category || 'Geral');
+    return [...groups].sort(([a], [b]) => a.localeCompare(b, 'pt-BR')).map(([category, entries]) => {
+      const ordered = [...entries].sort((a, b) => Number(Boolean(b.featured)) - Number(Boolean(a.featured)) || a.title.localeCompare(b.title, 'pt-BR'));
+      return `<section class="resource-group"><h3><span aria-hidden="true">${escapeHTML(categoryIcons[category] || '•')}</span> ${escapeHTML(category)} <small>(${entries.length})</small></h3><div class="resource-list">${ordered.map(resourceRow).join('')}</div></section>`;
+    }).join('');
+  }
+
   function renderHome() {
     const items = activeItems().sort((a, b) => String(b.updatedAt || b.createdAt || '').localeCompare(String(a.updatedAt || a.createdAt || '')));
     const notices = items.filter((item) => item.type === 'notice').sort((a, b) => String(a.expiresAt || '').localeCompare(String(b.expiresAt || ''))).slice(0, 3);
-    const quick = items.filter((item) => item.type === 'link').slice(0, 4);
-    const documents = items.filter((item) => item.type === 'document').slice(0, 3);
+    const links = items.filter((item) => item.type === 'link');
+    const documents = items.filter((item) => item.type === 'document');
     const quotes = items.filter((item) => item.type === 'quote').slice(0, 2);
     const totalDocs = items.filter((item) => item.type === 'document').length;
     const totalNotices = items.filter((item) => item.type === 'notice').length;
-    const quickMarkup = quick.length
-      ? `<div class="quick-grid">${quick.map((item) => `<a class="quick-card" href="${escapeHTML(cleanLink(item.url) || './area.html')}" ${cleanLink(item.url) ? 'target="_blank" rel="noopener noreferrer"' : ''}><div class="quick-card-top"><span class="quick-icon">${escapeHTML(iconFor(item))}</span><span class="arrow" aria-hidden="true">↗</span></div><strong>${escapeHTML(item.title)}</strong><small>${escapeHTML(item.category || 'Acesso rápido')}</small></a>`).join('')}</div>`
-      : emptyInline(state.user?.role === 'admin'
-        ? 'Comece incluindo os links usados com mais frequência pela área.'
-        : 'Os atalhos da área aparecerão aqui quando forem publicados.');
     const noticeMarkupList = notices.length ? notices.map(noticeMarkup).join('') : emptyInline(state.user?.role === 'admin' ? 'Adicione um aviso e defina até quando ele deve ficar visível.' : 'Nenhum aviso ativo neste momento.');
-    const documentsMarkup = documents.length ? documents.map(resourceRow).join('') : emptyInline('Documentos e materiais publicados pela área aparecem aqui.');
+    const linksMarkup = groupedResources(links, 'Os links da equipe aparecerão aqui quando forem publicados.');
+    const documentsMarkup = groupedResources(documents, 'Os anexos da equipe aparecerão aqui quando forem publicados.');
     const quotesMarkup = quotes.length ? quotes.map((item) => `<article class="quote-card"><span class="quote-mark">“</span><blockquote>${escapeHTML(item.body || item.title)}</blockquote>${item.body ? `<cite>${escapeHTML(item.title)}</cite>` : ''}${adminControls(item)}</article>`).join('') : emptyInline('Frases e princípios importantes da área aparecerão aqui quando forem publicados.');
     const categoryMarkup = categories.map((category) => {
       const count = items.filter((item) => item.category === category).length;
@@ -255,11 +262,11 @@
         <div class="welcome-seal" aria-hidden="true"><img class="revenue-symbol logo-for-light" src="./assets/revenue-symbol-light.png" alt="" /><img class="revenue-symbol logo-for-dark" src="./assets/revenue-symbol-dark.png" alt="" /><span class="seal-caption">REVENUE · 2026</span></div>
       </section>
       <div class="overview-line"><span class="date-stamp">${escapeHTML(displayToday())}</span><span class="date-stamp">${items.length} conteúdos · ${totalDocs} materiais · ${totalNotices} avisos ativos</span></div>
-      <section class="content-section"><div class="section-heading"><div><h2>Acesso rápido</h2><p>Os pontos de partida para o trabalho da área.</p></div><a class="text-link" href="./area.html?tipo=link">Ver todos <span aria-hidden="true">→</span></a></div>${quickMarkup}</section>
-      <div class="content-grid">
-        <section class="content-section"><div class="section-heading"><div><h2>Avisos em foco</h2><p>Informações importantes com prazo de validade.</p></div><a class="text-link" href="./area.html?tipo=notice">Todos os avisos <span aria-hidden="true">→</span></a></div><div class="notice-list">${noticeMarkupList}</div></section>
-        <section class="content-section"><div class="section-heading"><div><h2>Materiais recentes</h2><p>Guias e arquivos publicados pela equipe.</p></div><a class="text-link" href="./area.html?tipo=document">Abrir repositório <span aria-hidden="true">→</span></a></div><div class="resource-list">${documentsMarkup}</div></section>
+      <div class="content-grid directory-grid">
+        <section class="content-section"><div class="section-heading"><div><h2><span aria-hidden="true">↗</span> Links da área</h2><p>Ferramentas, painéis e atalhos.</p></div>${state.user?.role === 'admin' ? '<button class="button button-quiet" type="button" data-add-type="link">＋ Link</button>' : ''}</div>${linksMarkup}</section>
+        <section class="content-section"><div class="section-heading"><div><h2><span aria-hidden="true">▤</span> Anexos</h2><p>Guias, planilhas e materiais para baixar.</p></div>${state.user?.role === 'admin' ? '<button class="button button-quiet" type="button" data-add-type="document">＋ Anexo</button>' : ''}</div>${documentsMarkup}</section>
       </div>
+      <section class="content-section"><div class="section-heading"><div><h2>Avisos em foco</h2><p>Informações importantes com prazo de validade.</p></div><a class="text-link" href="./area.html?tipo=notice">Todos os avisos <span aria-hidden="true">→</span></a></div><div class="notice-list">${noticeMarkupList}</div></section>
       <section class="content-section"><div class="section-heading" style="margin-top:34px"><div><h2>Ideias que ficam</h2><p>Princípios e frases importantes para orientar as decisões.</p></div></div><div class="quote-strip">${quotesMarkup}</div></section>
       <section class="category-band"><div class="section-heading"><div><h2>Explore por assunto</h2><p>Encontre rapidamente o conteúdo certo para cada momento.</p></div><a class="text-link" href="./area.html">Ver repositório <span aria-hidden="true">→</span></a></div><div class="category-pills">${categoryMarkup}</div></section>`;
     wireItemActions($('#pageContent'));
@@ -309,6 +316,7 @@
   }
 
   function wireItemActions(root) {
+    root.querySelectorAll('[data-add-type]').forEach((button) => button.addEventListener('click', () => openNewItem(button.dataset.addType)));
     root.querySelectorAll('[data-action="edit"]').forEach((button) => button.addEventListener('click', () => {
       const item = state.items.find((entry) => entry.id === button.dataset.id);
       if (item) openEditItem(item);
@@ -353,8 +361,10 @@
     $('#itemBody').placeholder = isQuote ? 'Escreva a frase importante' : 'Uma linha para ajudar o time a entender o conteúdo';
   }
 
-  function openNewItem() {
+  function openNewItem(type = 'link') {
+    if (state.user?.role !== 'admin') return;
     $('#itemForm').reset();
+    $('#itemType').value = typeof type === 'string' ? type : 'link';
     $('#itemId').value = '';
     $('#dialogTitle').textContent = 'Adicionar conteúdo';
     $('#saveItem').textContent = 'Publicar';
@@ -421,16 +431,40 @@
         method: id ? 'PATCH' : 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload),
       });
       $('#itemDialog').close();
-      await refreshContent();
-      showToast(id ? 'Alterações salvas.' : 'Conteúdo publicado para a equipe.');
+      try {
+        await refreshContent();
+        showToast(id ? 'Alterações salvas.' : 'Conteúdo publicado para a equipe.');
+      } catch {
+        showToast('Conteúdo salvo. Recarregue a página para atualizar a lista.');
+      }
     } catch (error) { message.textContent = error.message; }
     finally { button.disabled = false; }
   }
 
   async function refreshContent() {
+    contentRevision++;
     const result = await request('/api/v1/content');
     state.items = Array.isArray(result.items) ? result.items : [];
     renderPage();
+  }
+
+  async function checkForUpdates() {
+    if (checkingUpdates || !state.user || document.hidden || $('#itemDialog').open || $('#pageContent').contains(document.activeElement)) return;
+    checkingUpdates = true;
+    const token = state.token;
+    const revision = contentRevision;
+    try {
+      const { items } = await request('/api/v1/content');
+      if (token !== state.token || revision !== contentRevision || document.hidden || $('#itemDialog').open || $('#pageContent').contains(document.activeElement)) return;
+      if (Array.isArray(items) && JSON.stringify(items) !== JSON.stringify(state.items)) {
+        state.items = items;
+        renderPage();
+      }
+    } catch {
+      // Keep the current list if a background refresh fails.
+    } finally {
+      checkingUpdates = false;
+    }
   }
 
   function signOut(message = '') {
@@ -463,6 +497,9 @@
   async function start() {
     setTheme(localStorage.getItem('central-revenue-theme') || 'dark');
     wireCommonControls();
+    filterFromQuery();
+    document.addEventListener('visibilitychange', checkForUpdates);
+    window.setInterval(checkForUpdates, 30000);
     if (!apiBase) {
       showGate('A página está pronta. Entre com sua conta Google da equipe Revenue para acessar os conteúdos compartilhados.');
       return;
@@ -474,7 +511,6 @@
         await enterApp();
       } catch { signOut('Entre com sua conta Google para continuar.'); }
     } else showGate();
-    filterFromQuery();
   }
 
   start();
