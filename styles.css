@@ -579,3 +579,12 @@ a { color: inherit; text-decoration: none; }
   .resource-row { flex-wrap: wrap; }
   .resource-row-copy { flex-basis: 115px; }
 }
+
+.google-signin {
+  width: min(100%, 248px);
+  min-height: 42px;
+  border: 1px solid var(--line-strong);
+  border-radius: 999px;
+  background: var(--panel);
+  color: var(--text);
+}

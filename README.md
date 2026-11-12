@@ -1,31 +1,14 @@
 # Central Revenue
 
-Portal interno da área Revenue, publicado no GitHub Pages. Reúne avisos com validade, links, arquivos, frases e referências em uma home e em um repositório pesquisável.
+Portal interno publicado no GitHub Pages a partir da raiz da branch `main`. Esta versão usa Firebase Authentication com Google, Cloud Firestore para conteúdo, permissões e anexos de até 5 MB. O projeto Firebase deve ser exclusivo da Central Revenue.
 
-## Publicação
+## Configurar o projeto
 
-- Endereço: <https://gabriel-loiola-jca.github.io/central-revenue/>
-- O GitHub Pages publica a raiz da branch `main`.
-- `config.js` aponta para a API protegida do Daily Room; a lista de pessoas e os papéis vêm das variáveis `GOOGLE_ALLOWED_EMAILS` e `GOOGLE_ADMIN_EMAILS` que já existem lá.
-- O conteúdo usa tabelas próprias `central_revenue_*` no D1 do Daily Room; anexos usam a mesma conta R2, em uma pasta `central-revenue/`. Nenhuma tabela nem arquivo do Daily Room é substituído.
-- O cliente Google Identity Services permanece o mesmo. A autorização é validada no servidor a cada chamada. E-mails de `GOOGLE_ADMIN_EMAILS` podem publicar, editar, remover e enviar arquivos; as demais pessoas autorizadas podem consultar e baixar.
+1. No console do Firebase, registre um app Web no projeto da Central. Copie o objeto `firebaseConfig` para `firebase` em `config.js`. Esse objeto é público. Credenciais de serviço e a lista de membros ficam fora do repositório.
+2. Em Authentication, ative o provedor Google e adicione `gabriel-loiola-jca.github.io` aos domínios autorizados.
+3. Crie o banco Firestore padrão em modo de produção.
+4. Publique as regras no projeto correto com `firebase deploy --only firestore:rules --project ID_DO_PROJETO_DA_CENTRAL`.
+5. No Firestore, crie um documento em `centralMembers` para cada e-mail autorizado, usando o e-mail em minúsculas como ID. Defina o campo de texto `role` como `member` para leitura ou `admin` para edição. Reaproveite a lista de e-mails do Daily Room. Essa coleção não pode ser listada nem editada pelo site.
+6. Teste com uma conta administradora, uma conta de leitura e uma conta que não está na lista. Publique a configuração Web na branch `main` para ativar a nova versão no GitHub Pages.
 
-## Primeira publicação da API
-
-O código da API compartilhada fica em `app/api/v1/[...segments]/route.ts` no repositório Revenue Daily Room. O schema é criado sem apagar dados existentes quando a rota inicia. Depois de publicar a atualização do Daily Room, a API atende a Central em `https://revenue-daily-room.gabrielmelokopi.chatgpt.site/api/v1/`.
-
-No cliente OAuth Web existente, acrescente às **Origens JavaScript autorizadas** a origem abaixo (somente protocolo e domínio, sem caminho):
-
-```text
-https://gabriel-loiola-jca.github.io
-```
-
-Não crie um cliente OAuth novo e não adicione redirect URI; o login usa Google Identity Services. A configuração do Google precisa ser salva para que o botão de login do GitHub Pages seja autorizado.
-
-## Pastas e arquivos
-
-- `index.html` — home.
-- `area.html` — repositório.
-- `app.js`, `styles.css` — interface e interações.
-- `config.js` — Client ID público e endereço da API (não contém segredos).
-- `assets/` — logos Revenue fornecidos pelo usuário.
+O Firestore da Central começa vazio. Caso existam conteúdos em outra base, importe apenas os registros e anexos da Central com acesso autorizado à origem.

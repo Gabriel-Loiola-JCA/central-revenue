@@ -1,5 +1,2 @@
-/* Public client ID only. Never put service account keys or storage secrets here. */
-window.CENTRAL_CONFIG = {
-  googleClientId: '612420902354-ie6tjol1igcruldt0i4ij3cv8vepn9ot.apps.googleusercontent.com',
-  apiBaseUrl: 'https://revenue-daily-room.gabrielmelokopi.chatgpt.site',
-};
+/* Public Firebase Web App configuration. */
+window.CENTRAL_CONFIG = { firebase: {"projectId":"jca-central-revenue","appId":"1:892781372094:web:fa66890a944093525474ef","storageBucket":"jca-central-revenue.firebasestorage.app","apiKey":"AIzaSyALN5RiVcuVbWv2mO6pc8PV8D-r1kf3PBs","authDomain":"jca-central-revenue.firebaseapp.com","messagingSenderId":"892781372094","projectNumber":"892781372094","version":"2"} };

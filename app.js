@@ -1,3 +1,5 @@
+import { createCentralStore } from './firebase-store.js?v=1';
+
 (() => {
   'use strict';
 
@@ -5,13 +7,12 @@
   const page = document.body.dataset.page === 'area' ? 'area' : 'home';
   const $ = (selector, root = document) => root.querySelector(selector);
   const escapeHTML = (value = '') => String(value).replace(/[&<>"']/g, (char) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' })[char]);
-  const apiBase = String(config.apiBaseUrl || '').trim().replace(/\/+$/, '');
+  const backend = config.firebase ? createCentralStore(config.firebase) : null;
   const dateFormatter = new Intl.DateTimeFormat('pt-BR', { day: '2-digit', month: 'short' });
-  const state = { token: sessionStorage.getItem('central-google-token') || '', user: null, items: [], filter: 'Todos', search: '' };
+  const state = { user: null, items: [], filter: 'Todos', search: '' };
   const categories = ['Estratégia', 'Indicadores', 'Ferramentas', 'Processos', 'Mercado', 'Materiais', 'Geral'];
   const categoryIcons = { Estratégia: '⌁', Indicadores: '▥', Ferramentas: '↗', Processos: '≋', Mercado: '◎', Materiais: '▤', Geral: '＋' };
   const typeLabels = { link: 'Link rápido', document: 'Documento', notice: 'Aviso', quote: 'Frase' };
-  let googleInitialized = false;
   let checkingUpdates = false;
   let contentRevision = 0;
 
@@ -93,82 +94,40 @@
     const gate = $('#accessGate');
     $('#app').hidden = true;
     gate.hidden = false;
-    const configured = Boolean(apiBase && config.googleClientId);
-    const status = !config.googleClientId
-      ? 'O login Google ainda não está configurado neste projeto.'
-      : !apiBase
-        ? 'A conexão protegida da Central Revenue ainda não está configurada.'
-        : 'Entre com a mesma conta Google autorizada para a equipe Revenue.';
-    $('.gate-message', gate).textContent = message || status;
-    if (configured) mountGoogleButton();
-  }
-
-  function mountGoogleButton(attempt = 0) {
+    $('.gate-message', gate).textContent = message || (backend
+      ? 'Entre com sua conta Google autorizada para a equipe Revenue.'
+      : 'A conexão protegida da Central Revenue ainda não foi configurada.');
     const holder = $('#googleButton');
-    if (!holder || $('#accessGate').hidden || !config.googleClientId) return;
-    if (!window.google?.accounts?.id) {
-      if (attempt < 35) window.setTimeout(() => mountGoogleButton(attempt + 1), 120);
-      else holder.textContent = 'Não foi possível carregar o login do Google.';
-      return;
-    }
-    if (!googleInitialized) {
-      window.google.accounts.id.initialize({
-        client_id: config.googleClientId,
-        callback: handleGoogleCredential,
-        auto_select: false,
-        cancel_on_tap_outside: true,
-      });
-      googleInitialized = true;
-    }
-    holder.innerHTML = '';
-    window.google.accounts.id.renderButton(holder, {
-      theme: 'outline_dark',
-      size: 'large',
-      shape: 'pill',
-      text: 'signin_with',
-      logo_alignment: 'center',
-      locale: 'pt-BR',
-      width: Math.min(248, Math.floor(holder.clientWidth)),
-    });
-  }
-
-  async function handleGoogleCredential(response) {
-    const message = $('.gate-message');
-    if (!response?.credential || !apiBase) return;
-    if (message) message.textContent = 'Validando sua conta…';
-    state.token = response.credential;
-    try {
-      const result = await request('/api/v1/session');
-      state.user = result.user;
-      sessionStorage.setItem('central-google-token', state.token);
-      await enterApp();
-    } catch (error) {
-      state.token = '';
-      state.user = null;
-      sessionStorage.removeItem('central-google-token');
-      if (message) {
-        message.textContent = error instanceof TypeError
-          ? 'Não foi possível conectar à Central Revenue. Tente novamente em instantes.'
-          : error.message;
+    holder.replaceChildren();
+    if (!backend) return;
+    const button = document.createElement('button');
+    button.type = 'button';
+    button.className = 'button google-signin';
+    button.textContent = 'Entrar com a conta Google';
+    button.addEventListener('click', async () => {
+      button.disabled = true;
+      $('.gate-message', gate).textContent = 'Validando sua conta…';
+      try {
+        state.user = await backend.signIn();
+        await enterApp();
+      } catch (error) {
+        await backend.signOut().catch(() => {});
+        showGate(authMessage(error));
+      } finally {
+        button.disabled = false;
       }
-      mountGoogleButton();
-    }
+    });
+    holder.append(button);
   }
 
-  async function request(path, options = {}) {
-    if (!apiBase) throw new Error('A conexão da Central Revenue ainda não foi configurada.');
-    const headers = new Headers(options.headers || {});
-    if (state.token) headers.set('Authorization', `Bearer ${state.token}`);
-    const response = await fetch(`${apiBase}${path}`, { ...options, headers, cache: 'no-store' });
-    if (!response.ok) {
-      const body = await response.json().catch(() => ({}));
-      if (response.status === 401) throw new Error('Entre novamente com sua conta Google.');
-      if (response.status === 403) throw new Error('Esta conta não tem acesso a essa ação.');
-      throw new Error(body.error || 'Não foi possível concluir a solicitação.');
+  function authMessage(error) {
+    switch (error.code) {
+      case 'auth/popup-closed-by-user': return 'Selecione uma conta Google para continuar.';
+      case 'auth/popup-blocked': return 'Permita que o navegador abra a janela do Google.';
+      case 'auth/unauthorized-domain': return 'O domínio da Central ainda precisa ser autorizado para login.';
+      case 'permission-denied': return 'Esta conta Google não tem acesso à Central Revenue.';
+      default: return error.code ? 'Não foi possível conectar à Central Revenue.' : error.message;
     }
-    if (response.status === 204) return null;
-    const contentType = response.headers.get('content-type') || '';
-    return contentType.includes('application/json') ? response.json() : response.blob();
   }
 
   function showToast(message, kind = 'success') {
@@ -200,13 +159,16 @@
     });
     setProfile();
     $('#pageContent').innerHTML = '<div class="loading-gate">Carregando a central…</div>';
+    const user = state.user;
     try {
-      const result = await request('/api/v1/content');
-      state.items = Array.isArray(result.items) ? result.items : [];
+      const items = await backend.listItems();
+      if (user !== state.user) return;
+      state.items = items;
       renderPage();
     } catch (error) {
-      if (/Entre novamente/.test(error.message)) return signOut(error.message);
-      $('#pageContent').innerHTML = `<section class="library-empty"><span class="empty-symbol">↻</span><h2>Não foi possível abrir a central</h2><p>${escapeHTML(error.message)} Verifique a conexão com a infraestrutura do Daily Room e tente novamente.</p><button class="button button-quiet" id="retryLoad" type="button">Tentar novamente</button></section>`;
+      if (user !== state.user) return;
+      if (error.code === 'permission-denied') return signOut(authMessage(error));
+      $('#pageContent').innerHTML = `<section class="library-empty"><span class="empty-symbol">↻</span><h2>Não foi possível abrir a central</h2><p>${escapeHTML(error.message)}</p><button class="button button-quiet" id="retryLoad" type="button">Tentar novamente</button></section>`;
       $('#retryLoad')?.addEventListener('click', enterApp);
     }
   }
@@ -385,7 +347,7 @@
     root.querySelectorAll('[data-action="delete"]').forEach((button) => button.addEventListener('click', async () => {
       const item = state.items.find((entry) => entry.id === button.dataset.id);
       if (!item || !window.confirm(`Remover “${item.title}” da central?`)) return;
-      try { await request(`/api/v1/content/${encodeURIComponent(item.id)}`, { method: 'DELETE' }); await refreshContent(); showToast('Conteúdo removido da central.'); }
+      try { await backend.removeItem(item.id); await refreshContent(); showToast('Conteúdo removido da central.'); }
       catch (error) { showToast(error.message, 'error'); }
     }));
     root.querySelectorAll('[data-download]').forEach((button) => button.addEventListener('click', () => downloadItem(button.dataset.download)));
@@ -395,7 +357,7 @@
     const item = state.items.find((entry) => entry.id === id);
     if (!item?.fileId) return;
     try {
-      const blob = await request(`/api/v1/files/${encodeURIComponent(item.fileId)}`);
+      const blob = await backend.download(item);
       const url = URL.createObjectURL(blob);
       const link = document.createElement('a');
       link.href = url;
@@ -468,29 +430,14 @@
     button.disabled = true;
     message.textContent = 'Salvando…';
     try {
-      let fileId;
-      let fileName;
-      const file = $('#itemFile').files[0];
-      if (type === 'document' && file) {
-        const form = new FormData();
-        form.append('file', file);
-        const uploaded = await request('/api/v1/uploads', { method: 'POST', body: form });
-        fileId = uploaded.fileId;
-        fileName = uploaded.fileName;
-      } else if (type === 'document' && id) {
-        const old = state.items.find((item) => item.id === id);
-        fileId = old?.fileId;
-        fileName = old?.fileName;
-      }
+      const file = type === 'document' ? $('#itemFile').files[0] : undefined;
       const payload = {
         type, category: $('#itemCategory').value, title,
         body: type === 'quote' && !body ? title : body,
-        url: type === 'link' ? url : '', fileId: fileId || '', fileName: fileName || '',
+        url: type === 'link' ? url : '',
         expiresAt: type === 'notice' ? expiresAt : '', featured: $('#itemFeatured').value === 'true',
       };
-      await request(id ? `/api/v1/content/${encodeURIComponent(id)}` : '/api/v1/content', {
-        method: id ? 'PATCH' : 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload),
-      });
+      await backend.saveItem(id, payload, file);
       $('#itemDialog').close();
       try {
         await refreshContent();
@@ -504,19 +451,18 @@
 
   async function refreshContent() {
     contentRevision++;
-    const result = await request('/api/v1/content');
-    state.items = Array.isArray(result.items) ? result.items : [];
+    state.items = await backend.listItems();
     renderPage();
   }
 
   async function checkForUpdates() {
     if (checkingUpdates || !state.user || document.hidden || $('#itemDialog').open || $('#pageContent').contains(document.activeElement)) return;
     checkingUpdates = true;
-    const token = state.token;
+    const user = state.user;
     const revision = contentRevision;
     try {
-      const { items } = await request('/api/v1/content');
-      if (token !== state.token || revision !== contentRevision || document.hidden || $('#itemDialog').open || $('#pageContent').contains(document.activeElement)) return;
+      const items = await backend.listItems();
+      if (user !== state.user || revision !== contentRevision || document.hidden || $('#itemDialog').open || $('#pageContent').contains(document.activeElement)) return;
       if (Array.isArray(items) && JSON.stringify(items) !== JSON.stringify(state.items)) {
         state.items = items;
         renderPage();
@@ -528,19 +474,22 @@
     }
   }
 
-  function signOut(message = '') {
-    state.token = '';
-    state.user = null;
-    state.items = [];
-    sessionStorage.removeItem('central-google-token');
-    showGate(message);
+  async function signOut(message = '') {
+    try {
+      await backend.signOut();
+      state.user = null;
+      state.items = [];
+      $('#profileMenu').hidden = true;
+      showGate(message);
+    } catch {
+      showToast('Não foi possível encerrar a sessão. Tente novamente.', 'error');
+    }
   }
 
   function wireCommonControls() {
     $('#themeToggle').addEventListener('click', () => {
       const nextTheme = document.documentElement.dataset.theme === 'dark' ? 'light' : 'dark';
       setTheme(nextTheme);
-      if ($('#accessGate') && !$('#accessGate').hidden) mountGoogleButton();
     });
     $('#profileButton').addEventListener('click', () => { $('#profileMenu').hidden = !$('#profileMenu').hidden; });
     $('#signOut').addEventListener('click', () => signOut('Você saiu da Central Revenue.'));
@@ -562,17 +511,16 @@
     filterFromQuery();
     document.addEventListener('visibilitychange', checkForUpdates);
     window.setInterval(checkForUpdates, 30000);
-    if (!apiBase) {
-      showGate('A página está pronta. Entre com sua conta Google da equipe Revenue para acessar os conteúdos compartilhados.');
-      return;
+    if (!backend) return showGate();
+    try {
+      state.user = await backend.currentUser();
+      if (state.user) await enterApp();
+      else showGate();
+    } catch (error) {
+      state.user = null;
+      await backend.signOut().catch(() => {});
+      showGate(authMessage(error));
     }
-    if (state.token) {
-      try {
-        const result = await request('/api/v1/session');
-        state.user = result.user;
-        await enterApp();
-      } catch { signOut('Entre com sua conta Google para continuar.'); }
-    } else showGate();
   }
 
   start();

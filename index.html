@@ -10,8 +10,7 @@
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400..800&amp;display=swap" />
-    <link rel="stylesheet" href="./styles.css?v=8" />
-    <script src="https://accounts.google.com/gsi/client" async defer></script>
+    <link rel="stylesheet" href="./styles.css?v=9" />
   </head>
   <body data-page="home">
     <main id="accessGate" class="access-gate">
@@ -69,7 +68,7 @@
           <label class="field field-wide"><span id="titleLabel">Título</span><input id="itemTitle" maxlength="120" required placeholder="Ex.: Guia de gestão de receita" /></label>
           <label class="field field-wide"><span>Contexto</span><textarea id="itemBody" maxlength="600" rows="3" placeholder="Uma linha para ajudar o time a entender o conteúdo"></textarea></label>
           <label id="urlField" class="field field-wide"><span>Endereço do site</span><input id="itemUrl" type="url" inputmode="url" placeholder="https://" /></label>
-          <label id="fileField" class="field field-wide" hidden><span>Arquivo (PDF, Office ou imagem · até 12 MB)</span><input id="itemFile" type="file" accept=".pdf,.doc,.docx,.xls,.xlsx,.ppt,.pptx,.png,.jpg,.jpeg,.webp" /></label>
+          <label id="fileField" class="field field-wide" hidden><span>Arquivo (PDF, Office ou imagem · até 5 MB)</span><input id="itemFile" type="file" accept=".pdf,.doc,.docx,.xls,.xlsx,.ppt,.pptx,.png,.jpg,.jpeg,.webp" /></label>
           <label id="expiryField" class="field"><span>Válido até</span><input id="itemExpiry" type="date" /></label>
           <label class="field"><span>Exibir em destaque</span><select id="itemFeatured"><option value="false">Não</option><option value="true">Sim</option></select></label>
         </div>
@@ -77,7 +76,7 @@
         <div class="dialog-actions"><button class="button button-quiet dialog-close" type="button">Cancelar</button><button id="saveItem" class="button button-primary" type="submit">Publicar</button></div>
       </form>
     </dialog>
-    <script src="./config.js?v=2"></script>
-    <script src="./app.js?v=9" defer></script>
+    <script src="./config.js?v=3"></script>
+    <script type="module" src="./app.js?v=10"></script>
   </body>
 </html>

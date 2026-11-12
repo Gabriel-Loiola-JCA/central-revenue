@@ -1,0 +1,68 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    function googleAccount() {
+      return request.auth != null
+        && request.auth.token.email_verified == true
+        && request.auth.token.firebase.sign_in_provider == 'google.com';
+    }
+
+    function memberPath() {
+      return /databases/$(database)/documents/centralMembers/$(request.auth.token.email.lower());
+    }
+
+    function hasRole(roles) {
+      return googleAccount() && get(memberPath()).data.role in roles;
+    }
+
+    function validItem(data) {
+      return data.keys().hasAll(['type', 'category', 'title', 'body', 'url', 'expiresAt',
+          'featured', 'fileId', 'fileName', 'fileParts', 'active', 'createdAt', 'updatedAt'])
+        && data.keys().hasOnly(['type', 'category', 'title', 'body', 'url', 'expiresAt',
+          'featured', 'fileId', 'fileName', 'fileParts', 'active', 'createdAt', 'updatedAt'])
+        && data.type in ['link', 'document', 'notice', 'quote']
+        && data.category in ['Estratégia', 'Indicadores', 'Ferramentas', 'Processos', 'Mercado', 'Materiais', 'Geral']
+        && data.title is string && data.title.size() > 0 && data.title.size() <= 120
+        && data.body is string && data.body.size() <= 600
+        && data.url is string && data.url.size() <= 2048
+        && (data.type == 'link' ? data.url.matches('https://.+') : data.url == '')
+        && data.expiresAt is string
+        && (data.type == 'notice' ? data.expiresAt.matches('[0-9]{4}-[0-9]{2}-[0-9]{2}') : data.expiresAt == '')
+        && data.fileId is string && data.fileName is string && data.fileName.size() <= 255
+        && data.fileParts is int && data.fileParts <= 7
+        && (data.type == 'document'
+          ? data.fileId.matches('[0-9a-f-]{36}') && data.fileName.size() > 0 && data.fileParts > 0
+          : data.fileId == '' && data.fileName == '' && data.fileParts == 0)
+        && data.featured is bool && data.active == true
+        && data.createdAt is string && data.createdAt.size() == 24
+        && data.updatedAt is string && data.updatedAt.size() == 24;
+    }
+
+    match /centralMembers/{email} {
+      allow get: if googleAccount() && request.auth.token.email.lower() == email;
+    }
+
+    match /centralItems/{id} {
+      allow get, list: if hasRole(['member', 'admin']);
+      allow create, update: if hasRole(['admin']) && validItem(request.resource.data);
+      allow delete: if hasRole(['admin']);
+      match /attachmentParts/{partId} {
+        function itemPath() {
+          return /databases/$(database)/documents/centralItems/$(id);
+        }
+
+        allow get, list: if hasRole(['member', 'admin']) && get(itemPath()).data.type == 'document';
+        allow create, update: if hasRole(['admin'])
+          && partId.matches('[0-6]')
+          && request.resource.data.keys().hasOnly(['fileId', 'index', 'bytes'])
+          && request.resource.data.fileId == getAfter(itemPath()).data.fileId
+          && request.resource.data.index is int
+          && request.resource.data.index >= 0
+          && request.resource.data.index < getAfter(itemPath()).data.fileParts
+          && request.resource.data.bytes is bytes
+          && request.resource.data.bytes.size() > 0 && request.resource.data.bytes.size() <= 786432;
+        allow delete: if hasRole(['admin']);
+      }
+    }
+  }
+}
