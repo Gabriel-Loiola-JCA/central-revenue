@@ -26,10 +26,6 @@
     return new Intl.DateTimeFormat('en-CA', { timeZone: 'America/Sao_Paulo', year: 'numeric', month: '2-digit', day: '2-digit' }).format(new Date());
   }
 
-  function displayToday() {
-    return new Intl.DateTimeFormat('pt-BR', { timeZone: 'America/Sao_Paulo', weekday: 'long', day: '2-digit', month: 'long', year: 'numeric' }).format(new Date());
-  }
-
   function cleanLink(value) {
     try {
       const url = new URL(value);
@@ -57,22 +53,13 @@
       : !apiBase
         ? 'A conexão protegida da Central Revenue ainda não está configurada.'
         : 'Entre com a mesma conta Google autorizada para a equipe Revenue.';
-    gate.innerHTML = `
-      <section class="gate-card">
-        <div class="gate-brand"><img class="revenue-logo logo-for-light" src="./assets/revenue-lockup-light.png" alt="Revenue" /><img class="revenue-logo logo-for-dark" src="./assets/revenue-lockup-dark.png" alt="Revenue" /></div>
-        <p class="gate-caption">INTELIGÊNCIA COMERCIAL</p>
-        <h1>Conhecimento para<br /><span>decidir melhor.</span></h1>
-        <p>Uma central da área para encontrar ferramentas, documentos, avisos e referências importantes.</p>
-        <div class="google-slot"><div id="googleButton"></div></div>
-        <div class="gate-message" role="status">${escapeHTML(message || status)}</div>
-        <div class="gate-foot"><span>◆</span> Acesso restrito às contas autorizadas da equipe.</div>
-      </section>`;
+    $('.gate-message', gate).textContent = message || status;
     if (configured) mountGoogleButton();
   }
 
   function mountGoogleButton(attempt = 0) {
     const holder = $('#googleButton');
-    if (!holder || !config.googleClientId) return;
+    if (!holder || $('#accessGate').hidden || !config.googleClientId) return;
     if (!window.google?.accounts?.id) {
       if (attempt < 35) window.setTimeout(() => mountGoogleButton(attempt + 1), 120);
       else holder.textContent = 'Não foi possível carregar o login do Google.';
@@ -89,13 +76,13 @@
     }
     holder.innerHTML = '';
     window.google.accounts.id.renderButton(holder, {
-      theme: document.documentElement.dataset.theme === 'dark' ? 'filled_black' : 'outline',
+      theme: 'outline',
       size: 'large',
       shape: 'rectangular',
       text: 'signin_with',
       logo_alignment: 'left',
       locale: 'pt-BR',
-      width: 290,
+      width: Math.min(300, Math.floor(holder.clientWidth)),
     });
   }
 
@@ -219,11 +206,11 @@
 
   function resourceRow(item) {
     const meta = [item.category, item.fileName || typeLabels[item.type]].filter(Boolean).join(' · ');
-    return `<article class="resource-row"><span class="file-icon">${escapeHTML(iconFor(item))}</span><div class="resource-row-copy"><strong>${escapeHTML(item.title)}</strong><small>${escapeHTML(meta)}</small></div>${cardAction(item, item.type === 'document' ? 'Baixar' : 'Abrir')}${adminControls(item)}</article>`;
+    return `<article class="resource-row"><span class="file-icon" aria-hidden="true">${escapeHTML(iconFor(item))}</span><div class="resource-row-copy"><strong>${escapeHTML(item.title)}</strong><small>${escapeHTML(meta)}</small></div>${cardAction(item, item.type === 'document' ? 'Baixar' : 'Abrir')}${adminControls(item)}</article>`;
   }
 
   function emptyInline(message) {
-    return `<div class="empty-inline"><i class="empty-dot" aria-hidden="true"></i><span>${escapeHTML(message)}</span></div>`;
+    return `<div class="empty-inline"><span>${escapeHTML(message)}</span></div>`;
   }
 
   function groupedResources(items, emptyMessage) {
@@ -241,34 +228,57 @@
     const links = items.filter((item) => item.type === 'link');
     const documents = items.filter((item) => item.type === 'document');
     const quotes = items.filter((item) => item.type === 'quote').slice(0, 2);
-    const totalDocs = items.filter((item) => item.type === 'document').length;
-    const totalNotices = items.filter((item) => item.type === 'notice').length;
     const noticeMarkupList = notices.length ? notices.map(noticeMarkup).join('') : emptyInline(state.user?.role === 'admin' ? 'Adicione um aviso e defina até quando ele deve ficar visível.' : 'Nenhum aviso ativo neste momento.');
     const linksMarkup = groupedResources(links, 'Os links da equipe aparecerão aqui quando forem publicados.');
     const documentsMarkup = groupedResources(documents, 'Os anexos da equipe aparecerão aqui quando forem publicados.');
-    const quotesMarkup = quotes.length ? quotes.map((item) => `<article class="quote-card"><span class="quote-mark">“</span><blockquote>${escapeHTML(item.body || item.title)}</blockquote>${item.body ? `<cite>${escapeHTML(item.title)}</cite>` : ''}${adminControls(item)}</article>`).join('') : emptyInline('Frases e princípios importantes da área aparecerão aqui quando forem publicados.');
+    const quotesMarkup = quotes.map((item) => `<article class="quote-card"><span class="quote-mark">“</span><blockquote>${escapeHTML(item.body || item.title)}</blockquote>${item.body ? `<cite>${escapeHTML(item.title)}</cite>` : ''}${adminControls(item)}</article>`).join('');
     const categoryMarkup = categories.map((category) => {
       const count = items.filter((item) => item.category === category).length;
       return `<a class="category-pill" href="./area.html?categoria=${encodeURIComponent(category)}">${escapeHTML(category)} <b>${count}</b></a>`;
     }).join('');
 
     $('#pageContent').innerHTML = `
-      <section class="welcome">
-        <div class="welcome-copy"><span class="eyebrow">UM ESPAÇO DA ÁREA REVENUE</span>
-          <h1>Inteligência para decisões <span>com contexto.</span></h1>
-          <p>Ferramentas, materiais, avisos e ideias importantes da área — organizados para você encontrar o que precisa e seguir em frente.</p>
-          <div class="welcome-actions"><a class="button button-primary" href="./area.html">Explorar minha área <span aria-hidden="true">→</span></a><span class="welcome-note">Uma fonte compartilhada para o time.</span></div>
+      <section class="welcome" aria-labelledby="homeTitle">
+        <div class="welcome-copy">
+          <span class="eyebrow">Portal da equipe</span>
+          <h1 id="homeTitle">Central Revenue<span>.</span></h1>
+          <p>Links, anexos e avisos da área.</p>
         </div>
-        <div class="welcome-seal" aria-hidden="true"><img class="revenue-symbol logo-for-light" src="./assets/revenue-symbol-light.png" alt="" /><img class="revenue-symbol logo-for-dark" src="./assets/revenue-symbol-dark.png" alt="" /><span class="seal-caption">REVENUE · 2026</span></div>
       </section>
-      <div class="overview-line"><span class="date-stamp">${escapeHTML(displayToday())}</span><span class="date-stamp">${items.length} conteúdos · ${totalDocs} materiais · ${totalNotices} avisos ativos</span></div>
-      <div class="content-grid directory-grid">
-        <section class="content-section"><div class="section-heading"><div><h2><span aria-hidden="true">↗</span> Links da área</h2><p>Ferramentas, painéis e atalhos.</p></div>${state.user?.role === 'admin' ? '<button class="button button-quiet" type="button" data-add-type="link">＋ Link</button>' : ''}</div>${linksMarkup}</section>
-        <section class="content-section"><div class="section-heading"><div><h2><span aria-hidden="true">▤</span> Anexos</h2><p>Guias, planilhas e materiais para baixar.</p></div>${state.user?.role === 'admin' ? '<button class="button button-quiet" type="button" data-add-type="document">＋ Anexo</button>' : ''}</div>${documentsMarkup}</section>
+      <nav class="section-nav" aria-label="Seções da página">
+        <a href="#links"><span aria-hidden="true">↗</span> Links <b>${links.length}</b></a>
+        <a href="#anexos"><span aria-hidden="true">▤</span> Anexos <b>${documents.length}</b></a>
+        <a href="#avisos"><span aria-hidden="true">◇</span> Avisos</a>
+        <a class="library-entry" href="./area.html">Buscar no repositório <span aria-hidden="true">→</span></a>
+      </nav>
+      <div class="directory-grid">
+        <section id="links" class="content-section">
+          <div class="section-heading">
+            <h2><span class="section-icon" aria-hidden="true">↗</span> Links da área</h2>
+            ${state.user?.role === 'admin' ? '<button class="button button-quiet" type="button" data-add-type="link">＋ Link</button>' : ''}
+          </div>
+          ${linksMarkup}
+        </section>
+        <section id="anexos" class="content-section">
+          <div class="section-heading">
+            <h2><span class="section-icon" aria-hidden="true">▤</span> Anexos</h2>
+            ${state.user?.role === 'admin' ? '<button class="button button-quiet" type="button" data-add-type="document">＋ Anexo</button>' : ''}
+          </div>
+          ${documentsMarkup}
+        </section>
       </div>
-      <section class="content-section"><div class="section-heading"><div><h2>Avisos em foco</h2><p>Informações importantes com prazo de validade.</p></div><a class="text-link" href="./area.html?tipo=notice">Todos os avisos <span aria-hidden="true">→</span></a></div><div class="notice-list">${noticeMarkupList}</div></section>
-      <section class="content-section"><div class="section-heading" style="margin-top:34px"><div><h2>Ideias que ficam</h2><p>Princípios e frases importantes para orientar as decisões.</p></div></div><div class="quote-strip">${quotesMarkup}</div></section>
-      <section class="category-band"><div class="section-heading"><div><h2>Explore por assunto</h2><p>Encontre rapidamente o conteúdo certo para cada momento.</p></div><a class="text-link" href="./area.html">Ver repositório <span aria-hidden="true">→</span></a></div><div class="category-pills">${categoryMarkup}</div></section>`;
+      <section id="avisos" class="content-section">
+        <div class="section-heading">
+          <h2><span class="section-icon" aria-hidden="true">◇</span> Avisos em foco</h2>
+          <a class="text-link" href="./area.html?tipo=notice">Todos os avisos <span aria-hidden="true">→</span></a>
+        </div>
+        <div class="notice-list">${noticeMarkupList}</div>
+      </section>
+      ${quotes.length ? `<section class="content-section"><div class="section-heading"><h2>Ideias que ficam</h2></div><div class="quote-strip">${quotesMarkup}</div></section>` : ''}
+      <section class="content-section">
+        <div class="section-heading"><h2>Explore por assunto</h2></div>
+        <div class="category-pills">${categoryMarkup}</div>
+      </section>`;
     wireItemActions($('#pageContent'));
   }
 
@@ -286,8 +296,8 @@
     const filterTypes = [['Todos', 'Todos'], ['Avisos', 'notice'], ['Links', 'link'], ['Documentos', 'document'], ['Frases', 'quote']];
     const filters = [...filterTypes.map(([label, value]) => `<button class="filter-button" type="button" data-filter="${value}" aria-pressed="${state.filter === value}">${label}</button>`), ...categories.map((category) => `<button class="filter-button" type="button" data-filter="${escapeHTML(category)}" aria-pressed="${state.filter === category}">${escapeHTML(category)}</button>`)].join('');
     $('#pageContent').innerHTML = `
-      <section class="content-header"><div><span class="eyebrow">REPOSITÓRIO DA ÁREA</span><h1>Minha área.</h1><p>Links, arquivos, referências e avisos em um só lugar. Use a busca ou filtre por tipo e assunto.</p></div><div class="library-tools"><label class="search-wrap"><span class="sr-only">Buscar materiais</span><input id="librarySearch" class="search-input" type="search" placeholder="Buscar na central" value="${escapeHTML(state.search)}" /></label><button class="button button-primary admin-only" id="areaAdd" type="button" ${state.user?.role === 'admin' ? '' : 'hidden'}>＋ Adicionar</button></div></section>
-      ${notices.length ? `<section><div class="section-heading" style="margin-top:24px"><div><h2>Avisos com prazo</h2><p>Os avisos saem da central automaticamente na data indicada.</p></div></div><div class="notice-page-grid">${notices.map(noticeMarkup).join('')}</div></section>` : ''}
+      <section class="content-header"><div><span class="eyebrow">REPOSITÓRIO DA ÁREA</span><h1>Minha área<span>.</span></h1></div><div class="library-tools"><label class="search-wrap"><span class="sr-only">Buscar materiais</span><input id="librarySearch" class="search-input" type="search" placeholder="Buscar na central" value="${escapeHTML(state.search)}" /></label><button class="button button-primary admin-only" id="areaAdd" type="button" ${state.user?.role === 'admin' ? '' : 'hidden'}>＋ Adicionar</button></div></section>
+      ${notices.length ? `<section class="content-section"><div class="section-heading"><h2>Avisos com prazo</h2></div><div class="notice-page-grid">${notices.map(noticeMarkup).join('')}</div></section>` : ''}
       <div class="filters" role="group" aria-label="Filtrar repositório">${filters}</div>
       <div id="libraryResults"></div>`;
     $('#librarySearch').addEventListener('input', (event) => { state.search = event.target.value; renderLibraryResults(); });

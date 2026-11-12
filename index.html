@@ -3,25 +3,30 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <meta name="theme-color" content="#101314" />
+    <meta name="theme-color" content="#000000" />
     <meta name="description" content="Central de conhecimento e recursos da área Revenue." />
     <title>Central Revenue</title>
     <link rel="icon" href="./assets/favicon-revenue.png" type="image/png" />
-    <link rel="stylesheet" href="./styles.css?v=5" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400..800&amp;display=swap" />
+    <link rel="stylesheet" href="./styles.css?v=6" />
     <script src="https://accounts.google.com/gsi/client" async defer></script>
   </head>
   <body data-page="home">
-    <div id="accessGate" class="access-gate" aria-live="polite">
-      <section class="gate-card">
-        <div class="gate-brand"><img class="revenue-logo logo-for-light" src="./assets/revenue-lockup-light.png" alt="Revenue" /><img class="revenue-logo logo-for-dark" src="./assets/revenue-lockup-dark.png" alt="Revenue" /></div>
-        <p class="gate-caption">INTELIGÊNCIA COMERCIAL</p>
-        <h1>Conhecimento para<br /><span>decidir melhor.</span></h1>
-        <p>Uma central da área para encontrar ferramentas, documentos, avisos e referências importantes.</p>
-        <div class="google-slot"></div>
-        <div class="gate-message" role="status">Conectando a Central Revenue…</div>
-        <div class="gate-foot"><span>◆</span> Acesso restrito às contas autorizadas da equipe.</div>
+    <main id="accessGate" class="access-gate">
+      <div class="gate-brand">
+        <img class="revenue-logo logo-for-light" src="./assets/revenue-lockup-light.png" alt="Revenue" />
+        <img class="revenue-logo logo-for-dark" src="./assets/revenue-lockup-dark.png" alt="Revenue" />
+      </div>
+      <section class="gate-card" aria-labelledby="gateTitle">
+        <span class="eyebrow">Portal da equipe</span>
+        <h1 id="gateTitle">Central<br />Revenue<span>.</span></h1>
+        <p class="gate-intro">Links, anexos e avisos da área.</p>
+        <div class="google-slot"><div id="googleButton"></div></div>
+        <p class="gate-message" role="status">Carregando o acesso…</p>
       </section>
-    </div>
+    </main>
     <div id="app" class="app-shell" hidden>
       <header class="topbar">
         <a class="brand" href="./" aria-label="Central Revenue, início">
@@ -34,7 +39,7 @@
         </nav>
         <div class="top-actions">
           <button id="themeToggle" class="icon-button" type="button" aria-label="Ativar modo claro" title="Alternar tema"><span class="theme-glyph" aria-hidden="true">◐</span></button>
-          <button id="adminAdd" class="button button-quiet admin-only" type="button" hidden><span aria-hidden="true">＋</span> Adicionar</button>
+          <button id="adminAdd" aria-label="Adicionar conteúdo" class="button button-quiet admin-only" type="button" hidden><span aria-hidden="true">＋</span> Adicionar</button>
           <button id="profileButton" class="profile-button" type="button" aria-label="Perfil" title="Perfil">
             <span id="profileInitials" class="avatar">R</span>
             <span id="profileName" class="profile-name">Revenue</span>
@@ -50,8 +55,8 @@
       <main id="pageContent" class="page-content"></main>
       <footer class="site-footer">
         <div class="footer-brand"><img class="revenue-logo footer-logo logo-for-light" src="./assets/revenue-lockup-light.png" alt="" /><img class="revenue-logo footer-logo logo-for-dark" src="./assets/revenue-lockup-dark.png" alt="" /></div>
-        <span>Conhecimento que aproxima decisões.</span>
-        <span class="footer-status"><i></i> Ambiente da área</span>
+
+        <span class="footer-status">Central Revenue</span>
       </footer>
     </div>
 
@@ -76,6 +81,6 @@
       </form>
     </dialog>
     <script src="./config.js?v=2"></script>
-    <script src="./app.js?v=6" defer></script>
+    <script src="./app.js?v=7" defer></script>
   </body>
 </html>
