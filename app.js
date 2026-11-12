@@ -76,13 +76,13 @@
     }
     holder.innerHTML = '';
     window.google.accounts.id.renderButton(holder, {
-      theme: 'outline',
+      theme: 'outline_dark',
       size: 'large',
-      shape: 'rectangular',
+      shape: 'pill',
       text: 'signin_with',
-      logo_alignment: 'left',
+      logo_alignment: 'center',
       locale: 'pt-BR',
-      width: Math.min(300, Math.floor(holder.clientWidth)),
+      width: Math.min(248, Math.floor(holder.clientWidth)),
     });
   }
 
@@ -100,7 +100,11 @@
       state.token = '';
       state.user = null;
       sessionStorage.removeItem('central-google-token');
-      if (message) message.textContent = error.message || 'Esta conta não tem acesso à Central Revenue.';
+      if (message) {
+        message.textContent = error instanceof TypeError
+          ? 'Não foi possível conectar à Central Revenue. Tente novamente em instantes.'
+          : error.message;
+      }
       mountGoogleButton();
     }
   }
