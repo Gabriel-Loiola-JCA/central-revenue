@@ -15,6 +15,52 @@
   let checkingUpdates = false;
   let contentRevision = 0;
 
+  function addParticles(stage) {
+    const motion = window.matchMedia('(hover: hover) and (pointer: fine) and (prefers-reduced-motion: no-preference)');
+    const field = document.createElement('div');
+    field.className = 'particle-field';
+    field.setAttribute('aria-hidden', 'true');
+
+    const particles = Array.from({ length: 60 }, (_, index) => {
+      const column = index % 10;
+      const row = Math.floor(index / 10);
+      const x = (column + .14 + ((index * 13) % 19) / 26) / 10;
+      const y = (row + .14 + ((index * 17) % 23) / 32) / 6;
+      const dot = document.createElement('span');
+      dot.className = 'particle';
+      dot.style.left = `${x * 100}%`;
+      dot.style.top = `${y * 100}%`;
+      field.append(dot);
+      return { dot, x, y };
+    });
+
+    stage.append(field);
+    stage.classList.add('has-particles');
+    stage.addEventListener('pointermove', (event) => {
+      if (!motion.matches || event.pointerType === 'touch') return;
+      const { left, top, width, height } = stage.getBoundingClientRect();
+      const cursorX = event.clientX - left;
+      const cursorY = event.clientY - top;
+      const radius = 120;
+
+      for (const { dot, x, y } of particles) {
+        const dx = x * width - cursorX;
+        const dy = y * height - cursorY;
+        const distance = Math.hypot(dx, dy);
+        if (distance >= radius || distance === 0) {
+          dot.style.transform = '';
+          continue;
+        }
+
+        const strength = 14 * (1 - distance / radius) / distance;
+        dot.style.transform = `translate(${dx * strength}px, ${dy * strength}px)`;
+      }
+    });
+    stage.addEventListener('pointerleave', () => {
+      for (const { dot } of particles) dot.style.transform = '';
+    });
+  }
+
   function setTheme(theme) {
     document.documentElement.dataset.theme = theme;
     localStorage.setItem('central-revenue-theme', theme);
@@ -283,6 +329,7 @@
         <div class="section-heading"><h2>Explore por assunto</h2></div>
         <div class="category-pills">${categoryMarkup}</div>
       </section>`;
+    addParticles($('.welcome'));
     wireItemActions($('#pageContent'));
   }
 
@@ -509,6 +556,7 @@
   }
 
   async function start() {
+    addParticles($('#accessGate'));
     setTheme(localStorage.getItem('central-revenue-theme') || 'dark');
     wireCommonControls();
     filterFromQuery();

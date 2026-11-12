@@ -10,15 +10,11 @@
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400..800&amp;display=swap" />
-    <link rel="stylesheet" href="./styles.css?v=6" />
+    <link rel="stylesheet" href="./styles.css?v=7" />
     <script src="https://accounts.google.com/gsi/client" async defer></script>
   </head>
   <body data-page="home">
     <main id="accessGate" class="access-gate">
-      <div class="gate-brand">
-        <img class="revenue-logo logo-for-light" src="./assets/revenue-lockup-light.png" alt="Revenue" />
-        <img class="revenue-logo logo-for-dark" src="./assets/revenue-lockup-dark.png" alt="Revenue" />
-      </div>
       <section class="gate-card" aria-labelledby="gateTitle">
         <span class="eyebrow">Portal da equipe</span>
         <h1 id="gateTitle">Central<br />Revenue<span>.</span></h1>
@@ -26,6 +22,10 @@
         <div class="google-slot"><div id="googleButton"></div></div>
         <p class="gate-message" role="status">Carregando o acesso…</p>
       </section>
+      <footer class="gate-brand">
+        <img class="revenue-logo logo-for-light" src="./assets/revenue-lockup-light.png" alt="Revenue" />
+        <img class="revenue-logo logo-for-dark" src="./assets/revenue-lockup-dark.png" alt="Revenue" />
+      </footer>
     </main>
     <div id="app" class="app-shell" hidden>
       <header class="topbar">
@@ -81,6 +81,6 @@
       </form>
     </dialog>
     <script src="./config.js?v=2"></script>
-    <script src="./app.js?v=8" defer></script>
+    <script src="./app.js?v=9" defer></script>
   </body>
 </html>
