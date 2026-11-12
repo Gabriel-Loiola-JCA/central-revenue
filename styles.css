@@ -121,7 +121,21 @@ a { color: inherit; text-decoration: none; }
   gap: 32px;
   padding: 66px var(--gutter) max(24px, env(safe-area-inset-bottom));
 }
-.gate-brand .revenue-logo { height: 16px; }
+.gate-lockup {
+  --lockup: url("./assets/revenue-lockup-dark.png");
+  display: flex;
+  gap: 8px;
+}
+:root[data-theme="light"] .gate-lockup { --lockup: url("./assets/revenue-lockup-light.png"); }
+.gate-lockup::before, .gate-lockup::after {
+  height: 16px;
+  background: var(--lockup) no-repeat;
+  background-size: auto 16px;
+  content: "";
+}
+/* Show the original symbol and lettering separately to adjust their spacing. */
+.gate-lockup::before { width: 24.1px; background-position: left center; }
+.gate-lockup::after { width: 53.4px; background-position: right center; }
 
 .particle-field {
   position: absolute;
